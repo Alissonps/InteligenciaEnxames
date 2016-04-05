@@ -1,5 +1,6 @@
 package cludipso;
 
+import java.awt.Color;
 import java.util.Random;
 
 import javax.swing.JFrame;
@@ -23,11 +24,6 @@ public class CLUDIPSO {
 	public double n1 = 2.8;
 	public double n2 = 1.3;
 	public int numero_Dimensoes = 2;
-
-	public double limite_inferior;
-	public double limite_superior;
-
-	public double criterio_parada = Math.pow(10, -8);
 
 	public CLUDIPSO(int iteracoes, int n_particulas, double inercia) {
 		this.inercia = inercia;
@@ -205,21 +201,11 @@ public class CLUDIPSO {
 
 				this.particulas[i][j] = this.particulas[i][j] + this.velocidade[interacao][i][j];
 				
-				if (this.particulas[i][j] > limite_superior) {
-					this.particulas[i][j] = limite_superior;
-
-				} else if (this.particulas[i][j] < limite_inferior) {
-					this.particulas[i][j] = limite_inferior;
-				}
-				
 			}
 		}
 	}
 	
 	public double Sphere_Fuction(double[] particulas) {
-
-		this.limite_superior = 1;
-		this.limite_inferior = -1;
 
 		double soma = 0;
 
@@ -271,13 +257,9 @@ public class CLUDIPSO {
 
 		double[][] grafico = new double[2][numero_Iteracoes];
 
-		JFrame frame_particulas = new JFrame("Plot das particulas");
-		frame_particulas.setSize(300, 300);
-		frame_particulas.setLocation(600, 0);
-
 		JFrame frame_otimização = new JFrame("Plot Otimização");
 		frame_otimização.setSize(300, 300);
-		frame_otimização.setLocation(0, 0);
+		frame_otimização.setLocation(500, 0);
 
 		while (i < numero_Iteracoes) {
 
@@ -299,34 +281,101 @@ public class CLUDIPSO {
 			// print para imprimir as iterações e os valores de thetas a cada iteração.
 			System.out.println(i + "- Melhor Fitness da iteração: " + fitBest + "\n");
 
-			/*
-			  // plots da otimização do fitness 
-			 Plot2DPanel plot_fitness = new	 Plot2DPanel(); 
-			 plot_fitness.addLinePlot("Fitness", grafico);
-			 frame_otimização.setContentPane(plot_fitness);
-			 frame_otimização.setVisible(true);
-			 */
-			/*
-			Plot2DPanel plot_particulas = new Plot2DPanel();
-			plot_particulas.addScatterPlot("Particulas", this.particulas);
-			frame_particulas.setContentPane(plot_particulas);
-			frame_particulas.setVisible(true);
-			*/
 			
-			//Thread.sleep(500);
-
-			System.out.println("Iteração: " + j);
-			if (fitBest <= this.criterio_parada) {
-				break;
-			}
-			j++;
-			//i++;
+			i++;
 		}
+		
+		// plots da otimização do fitness 
+		Plot2DPanel plot_fitness = new	 Plot2DPanel(); 
+		plot_fitness.addLinePlot("Fitness", grafico);
+		frame_otimização.setContentPane(plot_fitness);
+		frame_otimização.setVisible(true);
 
 	}
 
 	public static void main(String[] args) throws InterruptedException {
+		
+		Leitor_txt leitor = new Leitor_txt("iris.txt");
+		double[][] base_dados = leitor.Base_de_dados();
 
+		// for para saber a quantidade de elementos para cada classe
+		int set1 = 0;
+		int set2 = 0;
+		int set3 = 0;
+
+		for (int i = 0; i < base_dados.length; i++) {
+
+			if (base_dados[i][0] == 1) {
+
+				set1++;
+
+			} else if (base_dados[i][0] == 2) {
+
+				set2++;
+
+			} else if (base_dados[i][0] == 3) {
+
+				set3++;
+
+			}
+
+		}
+
+		// definir o tamanho que cada matriz vai ter de acordo com a quantidade
+		// de elementos de cada classe
+		double[][] conjunto1 = new double[set1][2];
+		double[][] conjunto2 = new double[set2][2];
+		double[][] conjunto3 = new double[set3][2];
+
+		// passando os dados para suas matrizes
+		set1 = 0;
+		set2 = 0;
+		set3 = 0;
+
+		for (int i = 0; i < base_dados.length; i++) {
+
+			if (base_dados[i][0] == 1) {
+
+				for (int j = 0; j < conjunto1[0].length; j++) {
+					conjunto1[set1][j] = base_dados[i][j + 1];
+				}
+
+				set1++;
+
+			} else if (base_dados[i][0] == 2) {
+
+				for (int j = 0; j < conjunto2[0].length; j++) {
+					conjunto2[set2][j] = base_dados[i][j + 1];
+				}
+
+				set2++;
+
+			} else if (base_dados[i][0] == 3) {
+
+				for (int j = 0; j < conjunto3[0].length; j++) {
+					conjunto3[set3][j] = base_dados[i][j + 1];
+				}
+
+				set3++;
+
+			}
+
+		}
+
+		
+		// plot do conjunto de dados
+		Plot2DPanel plot = new Plot2DPanel();
+		plot.addScatterPlot("Posições", Color.RED, conjunto1);
+		plot.addScatterPlot("Posições", Color.BLUE, conjunto2);
+		plot.addScatterPlot("Posições", Color.GREEN, conjunto3);
+
+		JFrame frame = new JFrame("Plot dos dados");
+		frame.setSize(500, 500);
+		frame.setLocation(0, 0);
+		frame.setContentPane(plot);
+		frame.setVisible(true);
+		
+		
 		CLUDIPSO p = new CLUDIPSO(10000, 20, 0.9);
 		p.Executar();
 
