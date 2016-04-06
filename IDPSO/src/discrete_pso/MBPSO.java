@@ -13,7 +13,7 @@ public class MBPSO {
 	public double[][] Xp;
 	public double[][] Xg;
 	public double[][] pBest;
-	public double[][][] velocidade;
+	public double[][] velocidade;
 	public double[] gBest;
 	public double inercia;
 	public double[] fitness;
@@ -54,7 +54,7 @@ public class MBPSO {
 
 		this.Xp = new double[numero_Particulas][numero_Dimensoes];
 		this.Xg = new double[numero_Particulas][numero_Dimensoes];
-		this.velocidade = new double[iteracoes][numero_Particulas][numero_Dimensoes];
+		this.velocidade = new double[numero_Particulas][numero_Dimensoes];
 
 		this.gBest = new double[numero_Dimensoes];
 		this.fitness = new double[numero_Particulas];
@@ -89,7 +89,7 @@ public class MBPSO {
 
 		for (int i = 0; i < Xp.length; i++) {
 			for (int j = 0; j < numero_Dimensoes; j++) {
-				this.velocidade[0][i][j] = 0;
+				this.velocidade[i][j] = 0;
 				
 			}
 		}
@@ -116,22 +116,22 @@ public class MBPSO {
 
 	}
 
-	public void Velocidade(int iteracao) {
+	public void Velocidade() {
 
 		for (int i = 0; i < this.Xp.length; i++) {
 			for (int j = 0; j < this.numero_Dimensoes; j++) {
 
-				this.velocidade[iteracao][i][j] = (this.inercia * this.velocidade[iteracao - 1][i][j])
+				this.velocidade[i][j] = (this.inercia * this.velocidade[i][j])
 						+ (this.n1 * Math.random() * (this.gBest[j] - this.Xp[i][j]))
 						+ (this.n2 * Math.random() * (this.pBest[i][j] - this.Xp[i][j]));
 			
-				if (this.velocidade[iteracao][i][j] >= Xgmax) {
+				if (this.velocidade[i][j] >= Xgmax) {
 					
-					this.velocidade[iteracao][i][j] = Xgmax;
+					this.velocidade[i][j] = Xgmax;
 					
-				}else if(this.velocidade[iteracao][i][j] <= Xgmin){
+				}else if(this.velocidade[i][j] <= Xgmin){
 					
-					this.velocidade[iteracao][i][j] = Xgmin;
+					this.velocidade[i][j] = Xgmin;
 					
 				}
 			}
@@ -139,14 +139,14 @@ public class MBPSO {
 
 	}
 
-	public void Atualizar_Particulas(int interacao) {
+	public void Atualizar_Particulas() {
 
 		double sigmoide = 0;
 		
 		for (int i = 0; i < this.Xp.length; i++) {
 			for (int j = 0; j < numero_Dimensoes; j++) {
 				
-				this.Xg[i][j] = this.Xg[i][j] + this.velocidade[interacao][i][j];
+				this.Xg[i][j] = this.Xg[i][j] + this.velocidade[i][j];
 				
 			}
 			
@@ -387,9 +387,9 @@ public class MBPSO {
 			Fitness();
 			DefinirGBest();
 			DefinirPBest();
-			Velocidade(i);
+			Velocidade();
 			Mutacao(i);
-			Atualizar_Particulas(i);
+			Atualizar_Particulas();
 
 			fitBest = this.bestFitness; // a cada iteração tem-se um melhor
 										// fitness, esse fitness é salvo em

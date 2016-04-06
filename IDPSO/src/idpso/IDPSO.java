@@ -12,7 +12,7 @@ public class IDPSO{
 	public int iteracoes;
 	public double[][] particulas;
 	public double[][] pBest;
-	public double[][][] velocidade;
+	public double[][] velocidade;
 	public double n1[], n2[];
 	public double[] gBest;
 	public double[] inercia;
@@ -53,7 +53,7 @@ public class IDPSO{
 		this.numero_Particulas = n_particulas;
 
 		this.particulas = new double[numero_Particulas][numero_Dimensoes];
-		this.velocidade = new double[iteracoes][numero_Particulas][numero_Dimensoes];
+		this.velocidade = new double[numero_Particulas][numero_Dimensoes];
 
 		this.phi = new double[numero_Particulas];
 		this.n1 = new double[numero_Particulas];
@@ -94,7 +94,7 @@ public class IDPSO{
 
 		for (int i = 0; i < particulas.length; i++) {
 			for (int j = 0; j < numero_Dimensoes; j++) {
-				this.velocidade[0][i][j] = 0;
+				this.velocidade[i][j] = 0;
 			}
 		}
 
@@ -126,22 +126,22 @@ public class IDPSO{
 
 	}
 
-	public void Velocidade(int iteracao) {
+	public void Velocidade() {
 
 		for (int i = 0; i < this.particulas.length; i++) {
 			for (int j = 0; j < this.numero_Dimensoes; j++) {
 
-				this.velocidade[iteracao][i][j] = (this.inercia[i] * this.velocidade[iteracao - 1][i][j])
+				this.velocidade[i][j] = (this.inercia[i] * this.velocidade[i][j])
 						+ (this.n1[i] * Math.random() * (this.gBest[j] - this.particulas[i][j]))
 						+ (this.n2[i] * Math.random() * (this.pBest[i][j] - this.particulas[i][j]));
 			
-				if (this.velocidade[iteracao][i][j] >= Xgmax) {
+				if (this.velocidade[i][j] >= Xgmax) {
 					
-					this.velocidade[iteracao][i][j] = Xgmax;
+					this.velocidade[i][j] = Xgmax;
 					
-				}else if(this.velocidade[iteracao][i][j] <= Xgmin){
+				}else if(this.velocidade[i][j] <= Xgmin){
 					
-					this.velocidade[iteracao][i][j] = Xgmin;
+					this.velocidade[i][j] = Xgmin;
 					
 				}
 			
@@ -194,12 +194,12 @@ public class IDPSO{
 
 	}
 
-	public void Atualizar_Particulas(int interacao) {
+	public void Atualizar_Particulas() {
 
 		for (int i = 0; i < this.particulas.length; i++) {
 			for (int j = 0; j < numero_Dimensoes; j++) {
 
-				this.particulas[i][j] = this.particulas[i][j] + this.velocidade[interacao][i][j];
+				this.particulas[i][j] = this.particulas[i][j] + this.velocidade[i][j];
 
 				if (this.particulas[i][j] > limite_superior) {
 					this.particulas[i][j] = limite_superior;
@@ -388,9 +388,9 @@ public class IDPSO{
 			Fitness();
 			DefinirGBest();
 			DefinirPBest();
-			Velocidade(i);
+			Velocidade();
 			Atualizar_Parametros(i);
-			Atualizar_Particulas(i);
+			Atualizar_Particulas();
 
 			fitBest = this.bestFitness; // a cada iteração tem-se um melhor
 										// fitness, esse fitness é salvo em

@@ -1,3 +1,4 @@
+
 package discrete_pso;
 
 import java.util.Random;
@@ -12,7 +13,7 @@ public class BPSO {
 	public int iteracoes;
 	public double[][] particula;
 	public double[][] pBest;
-	public double[][][] velocidade;
+	public double[][] velocidade;
 	public double[] gBest;
 	public double inercia;
 	public double[] fitness;
@@ -52,7 +53,7 @@ public class BPSO {
 		this.numero_Particulas = n_particulas;
 
 		this.particula = new double[numero_Particulas][numero_Dimensoes];
-		this.velocidade = new double[iteracoes][numero_Particulas][numero_Dimensoes];
+		this.velocidade = new double[numero_Particulas][numero_Dimensoes];
 
 		this.gBest = new double[numero_Dimensoes];
 		this.fitness = new double[numero_Particulas];
@@ -85,7 +86,7 @@ public class BPSO {
 
 		for (int i = 0; i < particula.length; i++) {
 			for (int j = 0; j < numero_Dimensoes; j++) {
-				this.velocidade[0][i][j] = 0;
+				this.velocidade[i][j] = 0;
 			}
 		}
 
@@ -111,22 +112,22 @@ public class BPSO {
 
 	}
 
-	public void Velocidade(int iteracao) {
+	public void Velocidade() {
 
 		for (int i = 0; i < this.particula.length; i++) {
 			for (int j = 0; j < this.numero_Dimensoes; j++) {
 
-				this.velocidade[iteracao][i][j] = (this.inercia * this.velocidade[iteracao - 1][i][j])
+				this.velocidade[i][j] = (this.inercia * this.velocidade[i][j])
 						+ (this.n1 * Math.random() * (this.gBest[j] - this.particula[i][j]))
 						+ (this.n2 * Math.random() * (this.pBest[i][j] - this.particula[i][j]));
 			
-				if (this.velocidade[iteracao][i][j] >= Xgmax) {
+				if (this.velocidade[i][j] >= Xgmax) {
 					
-					this.velocidade[iteracao][i][j] = Xgmax;
+					this.velocidade[i][j] = Xgmax;
 					
-				}else if(this.velocidade[iteracao][i][j] <= Xgmin){
+				}else if(this.velocidade[i][j] <= Xgmin){
 					
-					this.velocidade[iteracao][i][j] = Xgmin;
+					this.velocidade[i][j] = Xgmin;
 					
 				}
 			}
@@ -134,14 +135,14 @@ public class BPSO {
 
 	}
 
-	public void Atualizar_Particulas(int interacao) {
+	public void Atualizar_Particulas() {
 
 		double sigmoide = 0;
 		
 		for (int i = 0; i < this.particula.length; i++) {
 			for (int j = 0; j < numero_Dimensoes; j++) {
 
-				sigmoide = 1/(1 + Math.exp(-this.velocidade[interacao][i][j]));
+				sigmoide = 1/(1 + Math.exp(-this.velocidade[i][j]));
 				
 				double rand = Math.random();
 				
@@ -172,7 +173,7 @@ public class BPSO {
 				
 				jr = gerador.nextInt(this.numero_Dimensoes);
 				
-				this.velocidade[iteracao][i][jr] = this.velocidade[iteracao][i][jr] - this.velocidade[iteracao][i][jr];
+				this.velocidade[i][jr] = this.velocidade[i][jr] - this.velocidade[i][jr];
 				
 			}
 			
@@ -349,9 +350,9 @@ public class BPSO {
 			Fitness();
 			DefinirGBest();
 			DefinirPBest();
-			Velocidade(i);
+			Velocidade();
 			Mutacao(i);
-			Atualizar_Particulas(i);
+			Atualizar_Particulas();
 
 			fitBest = this.bestFitness; // a cada iteração tem-se um melhor
 										// fitness, esse fitness é salvo em

@@ -446,15 +446,6 @@ public class CLUDIPSO {
 			// iteração.
 			System.out.println(i + "- Melhor Fitness da iteração: " + fitBest + "\n");
 
-			plot.addScatterPlot("Particulas", Color.RED, this.gPosicoes);
-			//plot.addScatterPlot("Particulas", Color.BLACK, this.particulas);
-			frame.setContentPane(plot);
-			frame.setSize(700, 700);
-			frame.setLocation(0, 0);
-			frame.setVisible(true);
-			
-			Thread.sleep(200);
-
 			i++;
 		}
 
@@ -463,6 +454,14 @@ public class CLUDIPSO {
 		plot_fitness.addLinePlot("Fitness", grafico);
 		frame_otimização.setContentPane(plot_fitness);
 		frame_otimização.setVisible(true);
+		
+		plot.addScatterPlot("Particulas", Color.RED, this.gPosicoes);
+		//plot.addScatterPlot("Particulas", Color.BLACK, this.particulas);
+		frame.setContentPane(plot);
+		frame.setSize(700, 700);
+		frame.setLocation(0, 0);
+		frame.setVisible(true);
+		Thread.sleep(500);
 
 	}
 
@@ -471,7 +470,7 @@ public class CLUDIPSO {
 		Leitor_txt leitor = new Leitor_txt("iris.txt");
 		double[][] base_dados = leitor.Base_de_dados();
 
-		CLUDIPSO p = new CLUDIPSO(base_dados, 1000, 0.9);
+		CLUDIPSO p = new CLUDIPSO(base_dados, 100000, 0.25);
 		p.Executar();
 
 	}
