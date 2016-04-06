@@ -9,15 +9,16 @@ import org.math.plot.*;
 
 public class CLUDIPSO {
 
-	public int numero_Particulas;
 	public int numero_Iteracoes;
 	public double[][] particulas;
 	public double[][] pBest;
-	public double[][][] velocidade;
+	public double[][] velocidade;
 	public double[] gBest;
+	public double[][] gPosicoes;
 	public double inercia;
 	public double[] fitness;
-	public double[] p_fitness; // Essa varavel vai armazenar o melhor fitness de cada particula.
+	public double[] p_fitness; // Essa varavel vai armazenar o melhor fitness de
+								// cada particula.
 	public double bestFitness;
 	double pm_Max = 0.9;
 	double pm_Min = 0.4;
@@ -25,17 +26,29 @@ public class CLUDIPSO {
 	public double n2 = 1.3;
 	public int numero_Dimensoes = 2;
 
-	public CLUDIPSO(int iteracoes, int n_particulas, double inercia) {
-		this.inercia = inercia;
+	public double[][] base_entrada;
+	public int[] classes = { 1, 2, 3 };
+	public int K = this.classes.length;
+	public int numero_Particulas = this.K;
 
+	public double limite_superior = 1;
+	public double limite_inferior = -1;
+	public double Xgmax = 1;
+	public double Xgmin = -1;
+
+	public CLUDIPSO(double[][] b_entrada, int iteracoes, double inercia) {
+		this.base_entrada = b_entrada;
+
+		this.inercia = inercia;
 		this.numero_Iteracoes = iteracoes;
 
-		this.numero_Particulas = n_particulas;
-
-		this.particulas = new double[numero_Particulas][numero_Dimensoes];
-		this.velocidade = new double[iteracoes][numero_Particulas][numero_Dimensoes];
+		// a dimensão está menos 3 porque nesse momento só vou utilizar duas
+		// dimensões.
+		this.particulas = new double[this.K][numero_Dimensoes];
+		this.velocidade = new double[numero_Particulas][numero_Dimensoes];
 
 		this.gBest = new double[numero_Dimensoes];
+		this.gPosicoes = new double[numero_Particulas][numero_Dimensoes];
 		this.fitness = new double[numero_Particulas];
 		this.p_fitness = new double[numero_Particulas];
 		this.pBest = new double[numero_Particulas][numero_Dimensoes];
@@ -66,156 +79,131 @@ public class CLUDIPSO {
 
 		for (int i = 0; i < particulas.length; i++) {
 			for (int j = 0; j < numero_Dimensoes; j++) {
-				this.velocidade[0][i][j] = 0;
+				this.velocidade[i][j] = 0;
 			}
 		}
 
 	}
 
 	public void Fitness() {
+		double[] a = new double[this.particulas.length];
+		double[] b = new double[this.particulas.length];
+		double[] s = new double[this.particulas.length];
+		double[] max = new double[this.particulas.length];
 
+		// calculando a(i) e b(i)
+		for (int i = 0; i < this.particulas.length; i++) {
+			a[i] = Coesao(this.particulas[i], this.classes[i]);
+			b[i] = Separacao(this.particulas[i], this.classes[i]);
+		}
+
+		// calculando o max dos 3 s(i)
 		for (int i = 0; i < this.particulas.length; i++) {
 
-			this.fitness[i] = Sphere_Fuction(particulas[i]);
+			if (a[i] > b[i]) {
 
+				max[i] = a[i];
+
+			} else if ((a[i] < b[i])) {
+
+				max[i] = b[i];
+			}
+
+		}
+
+		// calculando o s(i)
+		for (int i = 0; i < this.particulas.length; i++) {
+
+			s[i] = (b[i] - a[i]) / max[i];
+
+		}
+
+		// calculando o fitness, o fitness é dado pela média dos s(i)
+		for (int i = 0; i < this.particulas.length; i++) {
+
+			for (int j = 0; j < s.length; j++) {
+
+				this.fitness[i] = this.fitness[i] + s[j];
+
+			}
+
+			double media = (this.fitness[i] / this.K);
+
+			this.fitness[i] = 1 - media;
 		}
 
 	}
 
 	public void Velocidade(int iteracao) {
-		
-		double r = Math.random(); //variável aleatoria para comparação da velocidade
 
-		//--------------------------------------------- Calcular Velocidade -------------------------------------------
+		// --------------------------------------------- Calcular Velocidade
+		// -------------------------------------------
 		for (int i = 0; i < this.particulas.length; i++) {
 			for (int j = 0; j < this.numero_Dimensoes; j++) {
 
-				this.velocidade[iteracao][i][j] = (this.inercia * this.velocidade[iteracao - 1][i][j])
-						+ (this.n1 * Math.random() * (this.gBest[j] - this.particulas[i][j]))
-						+ (this.n2 * Math.random() * (this.pBest[i][j] - this.particulas[i][j]));
+				double parte1 = (this.inercia * this.velocidade[i][j]);
+				double parte2 = (this.n1 * Math.random() * (this.gBest[j] - this.particulas[i][j]));
 				
-			}
-		}
-		
-		//normalizando a velocidade
-		normalizacao(this.velocidade[iteracao]); 
-		//--------------------------------------------------------------------------------------------------------------
-		
-		//--------------------------------------------- Atualizar Particulas -------------------------------------------
-		
-		for (int i = 0; i < this.particulas.length; i++) {
-			for (int j = 0; j < this.numero_Dimensoes; j++) {
-
-				//comparacao com a variavel r que é um número aleatorio entre 0 e 1
-				if(this.velocidade[iteracao][i][j] >= r)
-				{
-					
-					//se a particula for igual ao seu pbest, utiliza-se o fator de mutação
-					if(this.particulas[i][j] == this.pBest[i][j])
-					{
-						
-						Random num_random = new Random(); 
-						
-						//mudar o valor de duas dimensões aleatoriamente 
-						for (int k = 0; k < 2; k++) 
-						{
-							
-							int num = num_random.nextInt(this.numero_Dimensoes);
-							this.particulas[i][num] = Mutacao(iteracao);
-							
-						}
-					
-					//se a dimensão da velocidade for maior que r então usa-se a equação 1 para receber o valor do pbest
-					} else 
-					{
-						this.particulas[i][j] = this.pBest[i][j];
-					}		
-					
+				
+				double r = Math.random();
+				
+				if (this.velocidade[i][j] >= r) {
+					this.particulas[i][j] = this.pBest[i][j];
 				}
 				
+				if (this.particulas[i][j] == this.pBest[i][j]) {
+	
+					Random num_random = new Random();
+					int num = num_random.nextInt(this.numero_Dimensoes);
+					this.particulas[i][num] = Mutacao(iteracao);
+						
+				}
+				
+				double parte3 = (this.n2 * Math.random() * (this.pBest[i][j] - this.particulas[i][j]));
+
+				double teste = parte1 + parte2 + parte3;
+				this.velocidade[i][j] = teste;
+
+				if (this.velocidade[i][j] >= Xgmax) {
+
+					this.velocidade[i][j] = Xgmax;
+
+				} else if (this.velocidade[i][j] <= Xgmin) {
+
+					this.velocidade[i][j] = Xgmin;
+
+				}
+
 			}
 		}
-		
-		//--------------------------------------------------------------------------------------------------------------
-		
-		
+
+		// --------------------------------------------------------------------------------------------------------------
 	}
-	
-	public double Mutacao(int iteracao){
+
+	public double Mutacao(int iteracao) {
 		double pm = 0;
-		
+
 		pm = this.pm_Max - ((this.pm_Max - this.pm_Min) / this.numero_Iteracoes) * iteracao;
-		
+
 		return pm;
 	}
-	
-	public double min(double[][] serie) {
-		double menor = serie[0][0];
 
-		for (int i = 0; i < serie.length; i++) {
-			for (int j = 0; j < serie[0].length; j++) {
-
-				if (serie[i][j] < menor) {
-					menor = serie[i][j];
-				}
-			}
-		}
-
-		return menor;
-
-	}
-
-	public double max(double[][] serie) {
-		double maior = serie[0][0];
-
-		for (int i = 0; i < serie.length; i++) {
-			for (int j = 0; j < serie[0].length; j++) {
-				if (serie[i][j] > maior) {
-					maior = serie[i][j];
-				}
-			}
-		}
-		return maior;
-
-	}
-
-	public double[][] normalizacao(double[][] serie) {
-		double[][] suporte = new double[serie.length][serie[0].length];
-
-		double minimo = min(serie);
-		double maximo = max(serie);
-
-		for (int i = 0; i < serie.length; i++) {
-			for (int j = 0; j < serie[0].length; j++) {
-			suporte[i][j] = (serie[i][j] - minimo) / (maximo - minimo);
-
-		}}
-
-		return suporte;
-	}
-	
-	public void Atualizar_Particulas(int interacao) {
+	public void Atualizar_Particulas(int iteracao) {
 
 		for (int i = 0; i < this.particulas.length; i++) {
 			for (int j = 0; j < numero_Dimensoes; j++) {
 
-				this.particulas[i][j] = this.particulas[i][j] + this.velocidade[interacao][i][j];
-				
+				this.particulas[i][j] = this.particulas[i][j] + this.velocidade[i][j];
+
+				if (this.particulas[i][j] > limite_superior) {
+					this.particulas[i][j] = limite_superior;
+
+				} else if (this.particulas[i][j] < limite_inferior) {
+					this.particulas[i][j] = limite_inferior;
+				}
+
 			}
 		}
-	}
-	
-	public double Sphere_Fuction(double[] particulas) {
-
-		double soma = 0;
-
-		for (int j = 0; j < this.particulas[0].length; j++) {
-
-			soma = soma + Math.pow(particulas[j], 2);
-
-		}
-
-		return soma;
 	}
 
 	public void DefinirPBest() {
@@ -242,78 +230,134 @@ public class CLUDIPSO {
 
 				for (int j = 0; j < numero_Dimensoes; j++) {
 					this.gBest[j] = this.particulas[i][j];
+
+					for (int k = 0; k < this.particulas.length; k++) {
+
+						this.gPosicoes[k] = this.particulas[k].clone();
+
+					}
+
 				}
 			}
 		}
 
 	}
 
-	public void Executar() throws InterruptedException {
+	private double Coesao(double[] particula, double classe) {
 
-		CriarParticula();
-		int i = 1;
-		int j = 1;
-		double fitBest = 1;
+		double media = 0;
+		double qtd = 0;
 
-		double[][] grafico = new double[2][numero_Iteracoes];
+		for (int i = 0; i < this.base_entrada.length; i++) {
 
-		JFrame frame_otimização = new JFrame("Plot Otimização");
-		frame_otimização.setSize(300, 300);
-		frame_otimização.setLocation(500, 0);
+			if (this.base_entrada[i][0] == classe) {
 
-		while (i < numero_Iteracoes) {
+				for (int j = 0; j < numero_Dimensoes; j++) {
 
-			Fitness();
-			DefinirGBest();
-			DefinirPBest();
-			Velocidade(i);
-			Atualizar_Particulas(i);
-			
-			fitBest = this.bestFitness; // a cada iteração tem-se um melhor
-										// fitness, esse fitness é salvo em
-										// fitbest
+					media = media + Math.abs(particula[j] - this.base_entrada[i][j + 1]);
+				}
 
-			grafico[0][i] = i; // Grafico é uma matriz que recebe a quantidade
-								// de iterações e os melhores fitness de cada
-								// iteração para plotar o gráfico
-			grafico[1][i] = fitBest;
+				qtd++;
+			}
 
-			// print para imprimir as iterações e os valores de thetas a cada iteração.
-			System.out.println(i + "- Melhor Fitness da iteração: " + fitBest + "\n");
-
-			
-			i++;
 		}
-		
-		// plots da otimização do fitness 
-		Plot2DPanel plot_fitness = new	 Plot2DPanel(); 
-		plot_fitness.addLinePlot("Fitness", grafico);
-		frame_otimização.setContentPane(plot_fitness);
-		frame_otimização.setVisible(true);
+
+		media = media / qtd;
+
+		return media;
 
 	}
 
-	public static void main(String[] args) throws InterruptedException {
-		
-		Leitor_txt leitor = new Leitor_txt("iris.txt");
-		double[][] base_dados = leitor.Base_de_dados();
+	private double Separacao(double[] particula, double classe) {
+
+		double[] media = new double[this.K - 1];
+		double[] qtd = new double[this.K - 1];
+		double[] classe_amedir = new double[this.K - 1];
+
+		int z = 0;
+
+		for (int i = 0; i < this.classes.length; i++) {
+
+			if (this.classes[i] != classe) {
+
+				classe_amedir[z] = this.classes[i];
+
+				z++;
+			}
+
+		}
+
+		// ----------------------------Calculando a distancia para a primeira
+		// classe
+		// ----------------------------------------------------------------------------------------
+		for (int j = 0; j < this.base_entrada.length; j++) {
+
+			if (this.base_entrada[j][0] != classe && this.base_entrada[j][0] != classe_amedir[0]) {
+
+				for (int k = 0; k < numero_Dimensoes; k++) {
+
+					media[0] = media[0] + Math.abs(particula[k] - this.base_entrada[j][k + 1]);
+				}
+
+				qtd[0]++;
+
+			}
+		}
+
+		media[0] = media[0] / qtd[0];
+
+		// ----------------------------Calculando a distancia para a segunda
+		// classe-----------------------------------------------------------------------------------------
+
+		for (int j = 0; j < this.base_entrada.length; j++) {
+
+			if (this.base_entrada[j][0] != classe && this.base_entrada[j][0] != classe_amedir[1]) {
+
+				for (int k = 0; k < numero_Dimensoes; k++) {
+
+					media[1] = media[1] + Math.abs(particula[k] - this.base_entrada[j][k + 1]);
+				}
+
+				qtd[1]++;
+
+			}
+		}
+
+		media[1] = media[1] / qtd[1];
+
+		// ---------------------------------------------------------------------------------------------------------------------
+
+		double retornavel = 0;
+
+		if (media[0] < media[1]) {
+
+			retornavel = media[0];
+
+		} else
+			retornavel = media[1];
+
+		return retornavel;
+
+	}
+
+	public void Executar() throws InterruptedException {
 
 		// for para saber a quantidade de elementos para cada classe
 		int set1 = 0;
 		int set2 = 0;
 		int set3 = 0;
 
-		for (int i = 0; i < base_dados.length; i++) {
+		for (int i = 0; i < this.base_entrada.length; i++) {
 
-			if (base_dados[i][0] == 1) {
+			if (this.base_entrada[i][0] == 1) {
 
 				set1++;
 
-			} else if (base_dados[i][0] == 2) {
+			} else if (this.base_entrada[i][0] == 2) {
 
 				set2++;
 
-			} else if (base_dados[i][0] == 3) {
+			} else if (this.base_entrada[i][0] == 3) {
 
 				set3++;
 
@@ -332,28 +376,28 @@ public class CLUDIPSO {
 		set2 = 0;
 		set3 = 0;
 
-		for (int i = 0; i < base_dados.length; i++) {
+		for (int i = 0; i < this.base_entrada.length; i++) {
 
-			if (base_dados[i][0] == 1) {
+			if (this.base_entrada[i][0] == 1) {
 
 				for (int j = 0; j < conjunto1[0].length; j++) {
-					conjunto1[set1][j] = base_dados[i][j + 1];
+					conjunto1[set1][j] = this.base_entrada[i][j + 1];
 				}
 
 				set1++;
 
-			} else if (base_dados[i][0] == 2) {
+			} else if (this.base_entrada[i][0] == 2) {
 
 				for (int j = 0; j < conjunto2[0].length; j++) {
-					conjunto2[set2][j] = base_dados[i][j + 1];
+					conjunto2[set2][j] = this.base_entrada[i][j + 1];
 				}
 
 				set2++;
 
-			} else if (base_dados[i][0] == 3) {
+			} else if (this.base_entrada[i][0] == 3) {
 
 				for (int j = 0; j < conjunto3[0].length; j++) {
-					conjunto3[set3][j] = base_dados[i][j + 1];
+					conjunto3[set3][j] = this.base_entrada[i][j + 1];
 				}
 
 				set3++;
@@ -362,21 +406,72 @@ public class CLUDIPSO {
 
 		}
 
-		
 		// plot do conjunto de dados
 		Plot2DPanel plot = new Plot2DPanel();
-		plot.addScatterPlot("Posições", Color.RED, conjunto1);
-		plot.addScatterPlot("Posições", Color.BLUE, conjunto2);
-		plot.addScatterPlot("Posições", Color.GREEN, conjunto3);
+		plot.addScatterPlot("Posições", Color.ORANGE, conjunto1);
+		plot.addScatterPlot("Posições", Color.MAGENTA, conjunto2);
+		plot.addScatterPlot("Posições", Color.BLUE, conjunto3);
 
+		CriarParticula();
+		int i = 1;
+		double fitBest = 1;
+
+		double[][] grafico = new double[2][numero_Iteracoes];
+
+		JFrame frame_otimização = new JFrame("Plot Otimização");
+		frame_otimização.setSize(600, 600);
+		frame_otimização.setLocation(800, 0);
+
+		Plot2DPanel plot_fitness = new Plot2DPanel();
 		JFrame frame = new JFrame("Plot dos dados");
-		frame.setSize(500, 500);
-		frame.setLocation(0, 0);
-		frame.setContentPane(plot);
-		frame.setVisible(true);
-		
-		
-		CLUDIPSO p = new CLUDIPSO(10000, 20, 0.9);
+
+		while (i < numero_Iteracoes) {
+
+			Fitness();
+			DefinirGBest();
+			DefinirPBest();
+			Velocidade(i);
+			Atualizar_Particulas(i);
+
+			fitBest = this.bestFitness; // a cada iteração tem-se um melhor
+										// fitness, esse fitness é salvo em
+										// fitbest
+
+			grafico[0][i] = i; // Grafico é uma matriz que recebe a quantidade
+								// de iterações e os melhores fitness de cada
+								// iteração para plotar o gráfico
+			grafico[1][i] = fitBest;
+
+			// print para imprimir as iterações e os valores de thetas a cada
+			// iteração.
+			System.out.println(i + "- Melhor Fitness da iteração: " + fitBest + "\n");
+
+			plot.addScatterPlot("Particulas", Color.RED, this.gPosicoes);
+			//plot.addScatterPlot("Particulas", Color.BLACK, this.particulas);
+			frame.setContentPane(plot);
+			frame.setSize(700, 700);
+			frame.setLocation(0, 0);
+			frame.setVisible(true);
+			
+			Thread.sleep(200);
+
+			i++;
+		}
+
+		// plots da otimização do fitness
+
+		plot_fitness.addLinePlot("Fitness", grafico);
+		frame_otimização.setContentPane(plot_fitness);
+		frame_otimização.setVisible(true);
+
+	}
+
+	public static void main(String[] args) throws InterruptedException {
+
+		Leitor_txt leitor = new Leitor_txt("iris.txt");
+		double[][] base_dados = leitor.Base_de_dados();
+
+		CLUDIPSO p = new CLUDIPSO(base_dados, 1000, 0.9);
 		p.Executar();
 
 	}
