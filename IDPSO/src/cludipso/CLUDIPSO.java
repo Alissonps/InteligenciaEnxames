@@ -287,9 +287,8 @@ public class CLUDIPSO {
 
 		}
 
-		// ----------------------------Calculando a distancia para a primeira
-		// classe
-		// ----------------------------------------------------------------------------------------
+		// ----Calculando a distancia para a primeira classe-------
+		
 		for (int j = 0; j < this.base_entrada.length; j++) {
 
 			if (this.base_entrada[j][0] != classe && this.base_entrada[j][0] != classe_amedir[0]) {
@@ -408,8 +407,8 @@ public class CLUDIPSO {
 
 		// plot do conjunto de dados
 		Plot2DPanel plot = new Plot2DPanel();
-		plot.addScatterPlot("Posições", Color.ORANGE, conjunto1);
-		plot.addScatterPlot("Posições", Color.MAGENTA, conjunto2);
+		plot.addScatterPlot("Posições", Color.MAGENTA, conjunto1);
+		plot.addScatterPlot("Posições", Color.GREEN, conjunto2);
 		plot.addScatterPlot("Posições", Color.BLUE, conjunto3);
 
 		CriarParticula();
@@ -470,7 +469,7 @@ public class CLUDIPSO {
 		Leitor_txt leitor = new Leitor_txt("iris.txt");
 		double[][] base_dados = leitor.Base_de_dados();
 
-		CLUDIPSO p = new CLUDIPSO(base_dados, 100000, 0.25);
+		CLUDIPSO p = new CLUDIPSO(base_dados, 100000, 0.1);
 		p.Executar();
 
 	}
