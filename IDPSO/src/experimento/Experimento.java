@@ -24,6 +24,7 @@ public class Experimento {
 	public double media_erro_IDPSO;
 	public double desvio_Padrao_IDPSO;
 	
+	/*
 	public PSO pso = new PSO(iteracoes, particulas, inercia_inicial, n1, n2, equacao, sem_mudanca);
 	public double[] erro_PSO;
 	public double media_erro_PSO;
@@ -39,13 +40,13 @@ public class Experimento {
 	public double media_erro_MBPSO;
 	public double desvio_Padrao_MBPSO;
 	
-	
+	*/
 	
 	public Experimento(){
 
 		this.erro_IDPSO = new double[this.testes];
 		this.media_erro_IDPSO = 0;
-		
+		/*
 		this.erro_PSO = new double[this.testes];
 		this.media_erro_PSO = 0;
 		
@@ -53,7 +54,7 @@ public class Experimento {
 		this.media_erro_BPSO = 0;
 		
 		this.erro_MBPSO = new double[this.testes];
-		this.media_erro_MBPSO = 0;
+		this.media_erro_MBPSO = 0;*/
 	}
 	
 	public double Desvio_Padrao(double[] erro, double media){
@@ -90,6 +91,7 @@ public class Experimento {
 			this.erro_IDPSO[i] = this.idpso.bestFitness;
 			this.media_erro_IDPSO = this.media_erro_IDPSO + this.erro_IDPSO[i];
 			
+			/*
 			this.pso.Executar();
 			this.erro_PSO[i] = this.pso.bestFitness;
 			this.media_erro_PSO = this.media_erro_PSO + this.erro_PSO[i];
@@ -102,26 +104,29 @@ public class Experimento {
 			this.erro_MBPSO[i] = this.mbpso.bestFitness;
 			this.media_erro_MBPSO = this.media_erro_MBPSO + this.erro_MBPSO[i];
 			
-			
+			*/
 			i++;
 			
 			System.out.println(i);
 		}
 		
 		this.media_erro_IDPSO = (this.media_erro_IDPSO / (qtd_experimentos - 1));
-		this.media_erro_PSO = (this.media_erro_PSO / (qtd_experimentos - 1));
+		this.desvio_Padrao_IDPSO = Desvio_Padrao(this.erro_IDPSO, this.media_erro_IDPSO);
+		
+		
+		/*this.media_erro_PSO = (this.media_erro_PSO / (qtd_experimentos - 1));
 		this.media_erro_BPSO = (this.media_erro_BPSO / (qtd_experimentos - 1));
 		this.media_erro_MBPSO = (this.media_erro_MBPSO / (qtd_experimentos - 1));
 		
-		this.desvio_Padrao_IDPSO = Desvio_Padrao(this.erro_IDPSO, this.media_erro_IDPSO);
+		
 		this.desvio_Padrao_PSO = Desvio_Padrao(this.erro_PSO, this.media_erro_PSO);
 		this.desvio_Padrao_BPSO = Desvio_Padrao(this.erro_BPSO, this.media_erro_BPSO);
-		this.desvio_Padrao_MBPSO = Desvio_Padrao(this.erro_MBPSO, this.media_erro_MBPSO);
+		this.desvio_Padrao_MBPSO = Desvio_Padrao(this.erro_MBPSO, this.media_erro_MBPSO);*/
 		
 		
 		System.out.println("Média IDPSO: " + this.media_erro_IDPSO);
 		System.out.println("Desvio IDPSO: " + this.desvio_Padrao_IDPSO);
-		
+		/*
 		System.out.println("Média PSO: " + this.media_erro_PSO);
 		System.out.println("Desvio PSO: " + this.desvio_Padrao_PSO);
 		
@@ -129,7 +134,7 @@ public class Experimento {
 		System.out.println("Desvio BPSO: " + this.desvio_Padrao_BPSO);
 		
 		System.out.println("Média MBPSO: " + this.media_erro_MBPSO);
-		System.out.println("Desvio MBPSO: " + this.desvio_Padrao_MBPSO);
+		System.out.println("Desvio MBPSO: " + this.desvio_Padrao_MBPSO);*/
 		
 		
 		
